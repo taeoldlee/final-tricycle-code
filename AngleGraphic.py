@@ -1,8 +1,12 @@
-# for use in Mu Editor under Pygame Zero mode in parallel with sensor code (CircuitPython)
-# USAGE: The sensor should be mapped from 0-180. While running, type a number between 
-# 40 and 140 and hit enter to create a red line of the inputted angle, then type 0 to 
-# remove the red line. These actions should produce the angle_data.csv and 
-# red_line_events.csv files
+"""
+for use in Mu Editor under Pygame Zero mode in parallel with sensor code (CircuitPython)
+
+USAGE: The sensor should be mapped from 0-180. While running, type a number between 
+40 and 140 and hit enter to create a red line of the inputted angle, then type 0 to 
+remove the red line. These actions should produce the angle_data.csv and 
+red_line_events.csv files
+"""
+
 import pgzrun
 import pygame
 import pygame.gfxdraw
@@ -48,12 +52,20 @@ FILTER_WINDOW_SIZE = 4 #EVERYTHING ELSE
 # holds moving averages
 angle_history = []
 
-# function to map sensor output to min-max range (40-140)
+# function to map sensor output to min-max range (40-140) using linear interpolation
+# *linear interpolation used in this case to scale values from 0-179 to 40-140*
 def map_value(x, in_min, in_max, out_min, out_max):
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 
-# visual for the game
 def draw():
+    """
+    Draws visual elements on the screen, including the steering range, 
+    current angle line, and red line (if applicable)
+    
+    Global Variables Used:
+    - red_line_angle: float or None
+        Angle at which the red line should be drawn (if applicable)
+    """
     global red_line_angle
     
     # whole screen is white
@@ -81,8 +93,18 @@ def draw():
     # displays current angle as text below the steering range
     screen.draw.text("{:.0f}".format(current_angle), (WIDTH // 2, HEIGHT - 50), color=(0,0,0), fontsize=60, center=(WIDTH // 2, HEIGHT - 50))
 
-# updates game based on sensor data
 def update():
+    """
+    Updates game state based on sensor data
+    
+    Global Variables Modified:
+    - current_angle: float
+        Current angle of the steering sensor
+    - red_line_angle: float or None
+        Angle at which the red line should be drawn (if applicable)
+    - angle_history: list of float
+        History of sensor values for applying a moving average filter
+    """
     global current_angle, red_line_angle, angle_history
     sensor_data = pico_serial.readline().decode().strip()
     try:
